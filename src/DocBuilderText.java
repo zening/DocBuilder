@@ -1,37 +1,99 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class DocBuilderText {
 
+	public static String inputPath = "\\thoughtweb\\textDocs\\";
+	public static String outputPath = "\\thoughtweb\\textDocs-output\\";
+	
+	public static List<String> type04records = new ArrayList<String>(); // create type 04 record set for type03 to lookup 
 	
 	public static void main(String[] args) {
 
-		
-		File file = new File("C:\\textDocs\\AD910024.txt");
+		long startTime = System.currentTimeMillis();
 
-			buildType01(file );
-			buildType02(file );
-			
-	}
+		File file = new File( inputPath + "AD910024.txt");
 	
-	private static void buildType01(File file){
-
+		//get type 4 records for later lookup
+		getAllType04(file);
+		
+		//start processing here
 		BufferedReader br = null;
 		String line = "";
-	 
 		try {
-	 
+			 
 			br = new BufferedReader(new FileReader(file));
 			while ((line = br.readLine()) != null) {
 				if ( line.indexOf("01") == 0){
-			        // use comma as separator
+					buildType01(line );	
+				}
+				else if ( line.indexOf("02") == 0){
+					buildType02(line );	
+				}
+				else if ( line.indexOf("03") == 0){
+					buildType03(line);	
+				}
+				
+			}
+		
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+			long endTime   = System.currentTimeMillis();
+			long totalTime = endTime - startTime;
+			System.out.println(totalTime + "ms");
+	}
+	
+	private static void getAllType04(File file) {
+		BufferedReader br04 = null;
+		String line04 = "";
+		try {
+			 
+			br04 = new BufferedReader(new FileReader(file));
+
+			while ((line04 = br04.readLine()) != null) {
+				if ( line04.indexOf("04") == 0){
+					type04records.add( line04 );
+				}
+			}
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (br04 != null) {
+				try {
+					br04.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+	}
+	
+	private static void buildType01(String line) throws IOException{
+
 				String reportType = line.substring(0,2);
 				String Originator = line.substring(2, 10).trim();
 				String Case_Index_Reference = line.substring(10, 16);
@@ -43,7 +105,7 @@ public class DocBuilderText {
 				String Crime_Report = line.substring(92,101);
 				String Narrative = line.substring(101, line.length());
 				
-				BufferedWriter bw = new BufferedWriter(new FileWriter("c:\\textDocs-output\\"+Originator+Case_Index_Reference + " - " + reportType +" - "+ Case_Title +".txt"));
+				BufferedWriter bw = new BufferedWriter(new FileWriter(outputPath +Originator+Case_Index_Reference + " - " + reportType +" - "+ Case_Title +".txt"));
 				
 				bw.write(":Record Type: "+ reportType + " - Case File Record" ); bw.newLine();
 				bw.write(":Title: "+ Originator + Case_Index_Reference + " - " + Case_Title); bw.newLine();
@@ -59,38 +121,10 @@ public class DocBuilderText {
 
 				bw.close();
 				
-				}
 			}
-	 
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (br != null) {
-				try {
-					br.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	 
-		System.out.println("Report Type 01 Done");
-	  }
 		
-		
-	private static void buildType02(File file){
+	private static void buildType02(String line) throws IOException{
 
-		BufferedReader br = null;
-		String line = "";
-	 
-		try {
-	 
-			br = new BufferedReader(new FileReader(file));
-			while ((line = br.readLine()) != null) {
-				if ( line.indexOf("02") == 0){
-			        // use comma as separator
 				String reportType = line.substring(0,2);
 				String Originator = line.substring(970, 978).trim();
 				String Case_Index_Reference = line.substring(978, 984);
@@ -112,7 +146,7 @@ public class DocBuilderText {
 				String Birth_Date = line.substring(951,959);
 				String Notes_Text = line.substring(103,853).trim();
 				
-				BufferedWriter bw = new BufferedWriter(new FileWriter("c:\\textDocs-output\\"+Originator+Case_Index_Reference + " - " + reportType +" - "+ Given_Name1 +  Given_Name2 + Given_Name3 + Family_Name +".txt"));
+				BufferedWriter bw = new BufferedWriter(new FileWriter( outputPath + Originator+Case_Index_Reference + " - " + reportType +" - "+ Given_Name1 +  Given_Name2 + Given_Name3 + Family_Name +".txt"));
 				
 				bw.write(":Record Type: "+ reportType + " - Case Person Record" ); bw.newLine();
 				bw.write(":Title: "+ Originator + Case_Index_Reference + " - " + Given_Name1 + Given_Name2 + Given_Name3 + Family_Name); bw.newLine();
@@ -131,26 +165,93 @@ public class DocBuilderText {
 				bw.close();
 				
 				}
-			}
-	 
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (br != null) {
-				try {
-					br.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+	
+	private static void buildType03(String line) throws IOException{
+
+		String reportType = line.substring(0,2);
+		String Document_Type = line.substring(2, 4);
+		String Document_Date = line.substring(12,18);
+		String Source_Name = line.substring(18,48);
+		
+		String Address1 = line.substring(48,68).trim() + " " + line.substring(68,88).trim();
+
+	    String Home_Number = line.substring(88,98);
+	    String Bus_Number = line.substring(98,108);
+	    String Mobile_Number = "";
+	    
+		String Case_Index_Reference = line.substring(108, 114);
+
+		String DocTypeMapping = "";
+		switch (Document_Type){
+		case "RU":
+			DocTypeMapping = "Running Sheet";
+			break;
+		case "AC":
+			DocTypeMapping = "Actions";
+			break;
+		case "RE":
+			DocTypeMapping = "Result Sheet";
+			break;
+		case "MD":
+			DocTypeMapping = "Miscellaneous Documents";
+			break;
+		case "SR":
+			DocTypeMapping = "Statement Resumes";
+			break;
+		case "CP":
+			DocTypeMapping = "Crime Progress Report";
+			break;
 		}
-	 
-		System.out.println("Report Type 02 Done");
-	  }
+		
+		String Originator = line.substring(114, 122).trim();
+		String Parent_Doc = line.substring(122,124);
+		String Parent_Doc_Number = line.substring(124,132);
+
+		BufferedWriter bw = new BufferedWriter(new FileWriter( outputPath + Originator+Case_Index_Reference + " - " + reportType +" - "+ Parent_Doc + Parent_Doc_Number+".txt"));
+		
+		bw.write(":Record Type: "+ reportType + " - Case Document Record" ); bw.newLine();
+		bw.write(":Title: "+ Originator + Case_Index_Reference + " - " + Parent_Doc + Parent_Doc_Number); bw.newLine();
+		bw.write(":Originator: " + Originator); bw.newLine();
+		bw.write(":CIR: " + Case_Index_Reference); bw.newLine();
+		bw.write(":Type of Document: " + DocTypeMapping ); bw.newLine();
+		bw.write(":Document Reference: " + Parent_Doc + Parent_Doc_Number ); bw.newLine();
+		bw.write(":Document Date: " + Document_Date ); bw.newLine();
+		bw.write(":Source Name: " + Source_Name ); bw.newLine();
+
+		bw.write(":Street Address: " + Address1 ); bw.newLine();
+		
+		bw.write(":Home Contact Number: " + Home_Number ); bw.newLine();
+		bw.write(":Business Phone Number: " + Bus_Number ); bw.newLine();
+		bw.write(":Mobile Contact Number: " + Mobile_Number ); bw.newLine();
+		
+		//get text from type04 here ***************************
+		String type04Text = getType04Text(Parent_Doc + Parent_Doc_Number);
+		bw.write( type04Text ); bw.newLine();
+		bw.close();
+		
+		}
+
+	private static String getType04Text(String docKey) {
+		String result  = "";
+		String currentKey = "";
+		String line = "";	
+		for(int i=0;i<type04records.size();i++){
+			line = type04records.get(i);
+			currentKey = (line.substring(769,771)+line.substring(771,779));
+			
+			if ( currentKey.equalsIgnoreCase(docKey)){
+				String PNUM = line.substring(2,5);
+				String Text = line.substring(5,755);
+				result += ":Text " + PNUM +": \r\n" + Text ;		
+			}
+
+		}
+		return result;
+	}
 	
 
 	
-
 }
+
+	
+
