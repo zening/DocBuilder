@@ -15,12 +15,14 @@ public class DocBuilderText {
 	public static String outputPath = "\\thoughtweb\\textDocs-output\\";
 	
 	public static List<String> type04records = new ArrayList<String>(); // create type 04 record set for type03 to lookup 
+	public static int counter02 = 0;
+	public static int counter03 = 0;
 	
 	public static void main(String[] args) {
 
 		long startTime = System.currentTimeMillis();
 
-		File file = new File( inputPath + "AD910024.txt");
+		File file = new File( inputPath + "pd72904cmstest.txt");
 	
 		//get type 4 records for later lookup
 		getAllType04(file);
@@ -36,10 +38,13 @@ public class DocBuilderText {
 					buildType01(line );	
 				}
 				else if ( line.indexOf("02") == 0){
-					buildType02(line );	
+					counter02++;
+					buildType02(line, counter02 );	
+					
 				}
 				else if ( line.indexOf("03") == 0){
-					buildType03(line);	
+					counter03++;
+					buildType03(line, counter03);	
 				}
 				
 			}
@@ -60,6 +65,9 @@ public class DocBuilderText {
 
 			long endTime   = System.currentTimeMillis();
 			long totalTime = endTime - startTime;
+			System.out.println("Type02 :"+counter02);
+			System.out.println("Type03 :"+counter03);
+			
 			System.out.println(totalTime + "ms");
 	}
 	
@@ -84,6 +92,8 @@ public class DocBuilderText {
 			if (br04 != null) {
 				try {
 					br04.close();
+					
+					System.out.println("Total of Type 04: " + type04records.size());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -112,7 +122,7 @@ public class DocBuilderText {
 				bw.write(":Originator: " + Originator); bw.newLine();
 				bw.write(":CIR: " + Case_Index_Reference); bw.newLine();
 				bw.write(":Case Title: " + Case_Title); bw.newLine();
-				bw.write(":Case_Date: " + Case_Date); bw.newLine();
+				bw.write(":Case Date: " + Case_Date); bw.newLine();
 				bw.write(":Offence Date: " + Offence_Date);		bw.newLine();
 				bw.write(":Offence Time: " + Offence_Time);		bw.newLine();
 				bw.write(":Offence Location: " + Offence_Location);	bw.newLine();	
@@ -123,10 +133,13 @@ public class DocBuilderText {
 				
 			}
 		
-	private static void buildType02(String line) throws IOException{
+	private static void buildType02(String line, int counter) throws IOException{
 
 				String reportType = line.substring(0,2);
 				String Originator = line.substring(970, 978).trim();
+				String Link_Type = line.substring(2, 11).trim();
+				String Current_Doc_Ref = line.substring(11, 21).trim(); 
+				
 				String Case_Index_Reference = line.substring(978, 984);
 				String Given_Name1 = (line.substring(53,73).trim().length() > 0 ) ? line.substring(53,73).trim() + " " : "" ;
 				String Given_Name2 = (line.substring(73,88).trim().length() > 0 ) ? line.substring(73,88).trim() + " " : "" ;
@@ -146,13 +159,15 @@ public class DocBuilderText {
 				String Birth_Date = line.substring(951,959);
 				String Notes_Text = line.substring(103,853).trim();
 				
-				BufferedWriter bw = new BufferedWriter(new FileWriter( outputPath + Originator+Case_Index_Reference + " - " + reportType +" - "+ Given_Name1 +  Given_Name2 + Given_Name3 + Family_Name +".txt"));
+				BufferedWriter bw = new BufferedWriter(new FileWriter( outputPath + Originator+Case_Index_Reference + " - " + reportType +" - "+ Given_Name1 +  Given_Name2 + Given_Name3 + Family_Name +"."+counter+".txt"));
 				
 				bw.write(":Record Type: "+ reportType + " - Case Person Record" ); bw.newLine();
 				bw.write(":Title: "+ Originator + Case_Index_Reference + " - " + Given_Name1 + Given_Name2 + Given_Name3 + Family_Name); bw.newLine();
 				bw.write(":Originator: " + Originator); bw.newLine();
 				bw.write(":CIR: " + Case_Index_Reference); bw.newLine();
 				bw.write(":Name: " + Given_Name1 + Given_Name2 + Given_Name3 + Family_Name); bw.newLine();
+				bw.write(":Link Type: " + Link_Type );	bw.newLine();
+				bw.write(":Current Document Reference: " + Current_Doc_Ref );	bw.newLine();
 				bw.write(":ISN: " + Person_ISN ); bw.newLine();
 				bw.write(":D.O.B: " + Birth_Date ); bw.newLine();
 				bw.write(":Gender: " + Gender ); bw.newLine();
@@ -166,18 +181,20 @@ public class DocBuilderText {
 				
 				}
 	
-	private static void buildType03(String line) throws IOException{
+	private static void buildType03(String line, int counter) throws IOException{
 
 		String reportType = line.substring(0,2);
 		String Document_Type = line.substring(2, 4);
-		String Document_Date = line.substring(12,18);
-		String Source_Name = line.substring(18,48);
+		String Document_Number = line.substring(4, 12);
 		
-		String Address1 = line.substring(48,68).trim() + " " + line.substring(68,88).trim();
-
-	    String Home_Number = line.substring(88,98);
-	    String Bus_Number = line.substring(98,108);
-	    String Mobile_Number = "";
+		String Document_Date = line.substring(12,18);
+//		String Source_Name = line.substring(18,48);
+//		
+//		String Address1 = line.substring(48,68).trim() + " " + line.substring(68,88).trim();
+//
+//	    String Home_Number = line.substring(88,98);
+//	    String Bus_Number = line.substring(98,108);
+//	    String Mobile_Number = "";
 	    
 		String Case_Index_Reference = line.substring(108, 114);
 
@@ -204,41 +221,46 @@ public class DocBuilderText {
 		}
 		
 		String Originator = line.substring(114, 122).trim();
-		String Parent_Doc = line.substring(122,124);
-		String Parent_Doc_Number = line.substring(124,132);
+//		String Parent_Doc = line.substring(122,124);
+//		String Parent_Doc_Number = line.substring(124,132);
 
-		BufferedWriter bw = new BufferedWriter(new FileWriter( outputPath + Originator+Case_Index_Reference + " - " + reportType +" - "+ Parent_Doc + Parent_Doc_Number+".txt"));
+		BufferedWriter bw = new BufferedWriter(new FileWriter( outputPath + Originator+Case_Index_Reference + " - " + reportType +" - "+ Document_Type + Document_Number +"."+counter+".txt"));
 		
 		bw.write(":Record Type: "+ reportType + " - Case Document Record" ); bw.newLine();
-		bw.write(":Title: "+ Originator + Case_Index_Reference + " - " + Parent_Doc + Parent_Doc_Number); bw.newLine();
+		bw.write(":Title: "+ Originator + Case_Index_Reference + " - " + Document_Type + Document_Number); bw.newLine();
 		bw.write(":Originator: " + Originator); bw.newLine();
 		bw.write(":CIR: " + Case_Index_Reference); bw.newLine();
-		bw.write(":Type of Document: " + DocTypeMapping ); bw.newLine();
-		bw.write(":Document Reference: " + Parent_Doc + Parent_Doc_Number ); bw.newLine();
-		bw.write(":Document Date: " + Document_Date ); bw.newLine();
-		bw.write(":Source Name: " + Source_Name ); bw.newLine();
-
-		bw.write(":Street Address: " + Address1 ); bw.newLine();
+		bw.write(":Type of Document: " +  DocTypeMapping); bw.newLine();
+		bw.write(":Document Reference: " + Document_Type + Document_Number ); bw.newLine();
 		
-		bw.write(":Home Contact Number: " + Home_Number ); bw.newLine();
-		bw.write(":Business Phone Number: " + Bus_Number ); bw.newLine();
-		bw.write(":Mobile Contact Number: " + Mobile_Number ); bw.newLine();
+		//bw.write(":Document Reference: " + Parent_Doc + Parent_Doc_Number ); bw.newLine();
+		bw.write(":Document Date: " + Document_Date ); bw.newLine();
+//		bw.write(":Source Name: " + Source_Name ); bw.newLine();
+//
+//		bw.write(":Street Address: " + Address1 ); bw.newLine();
+//		
+//		bw.write(":Home Contact Number: " + Home_Number ); bw.newLine();
+//		bw.write(":Business Phone Number: " + Bus_Number ); bw.newLine();
+//		bw.write(":Mobile Contact Number: " + Mobile_Number ); bw.newLine();
 		
 		//get text from type04 here ***************************
-		String type04Text = getType04Text(Parent_Doc + Parent_Doc_Number);
-		bw.write( type04Text ); bw.newLine();
+		String type04Text = getType04Text(Document_Type + Document_Number);
+		//if (type04Text.length() > 0 ){
+			bw.write( type04Text ); bw.newLine();
+		//}
 		bw.close();
-		
 		}
 
 	private static String getType04Text(String docKey) {
 		String result  = "";
 		String currentKey = "";
 		String line = "";	
+		
 		for(int i=0;i<type04records.size();i++){
 			line = type04records.get(i);
+
 			currentKey = (line.substring(769,771)+line.substring(771,779));
-			
+
 			if ( currentKey.equalsIgnoreCase(docKey)){
 				String PNUM = line.substring(2,5);
 				String Text = line.substring(5,755);
@@ -246,6 +268,7 @@ public class DocBuilderText {
 			}
 
 		}
+		//System.out.println("type04: "+result);
 		return result;
 	}
 	
